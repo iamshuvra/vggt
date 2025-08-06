@@ -172,11 +172,15 @@ class BaseDataset(Dataset):
             aug_size = aug_size.astype(np.int32)
         else:
             aug_size = original_size
+            # Do not crop if the intrinsic matrix is a dummy identity matrix,
+            # as this will result in a zero-sized image.
+            is_dummy_intrinsic = np.allclose(intri_opencv, np.eye(3))
+            if not is_dummy_intrinsic:
+                # Move principal point to the image center and crop if necessary
+                image, depth_map, intri_opencv, track = crop_image_depth_and_intrinsic_by_pp(
+                    image, depth_map, intri_opencv, aug_size, track=track, filepath=filepath,
+                )
 
-        # Move principal point to the image center and crop if necessary
-        image, depth_map, intri_opencv, track = crop_image_depth_and_intrinsic_by_pp(
-            image, depth_map, intri_opencv, aug_size, track=track, filepath=filepath,
-        )
 
         original_size = np.array(image.shape[:2])  # update original_size
         target_shape = target_image_shape

@@ -18,7 +18,7 @@ except AttributeError:
     lanczos = PIL.Image.LANCZOS
     bicubic = PIL.Image.BICUBIC
 
-from vggt.utils.geometry import closed_form_inverse_se3
+from vggt.src.utils.geometry import closed_form_inverse_se3
 
 
 
@@ -217,6 +217,12 @@ def resize_image_depth_and_intrinsic(
     if rescale_aug:
         random_boundary = np.random.triangular(0, 0, 0.3)
         safe_bound = safe_bound + random_boundary * target_shape.max()
+
+    if np.any(original_size <= 0):
+        raise ValueError(
+            f"Cannot resize image with a zero-sized dimension. Original size was {original_size}. "
+            "This typically means an image file is missing, corrupt, or the path is incorrect."
+        )
 
     resize_scales = (target_shape + safe_bound) / original_size
     max_resize_scale = np.max(resize_scales)
@@ -636,6 +642,8 @@ def read_image_cv2(path: str, rgb: bool = True) -> np.ndarray:
     img = cv2.imread(path)
     if img is None:
         print(f"Could not load image={path}. Retrying...")
+        if img.shape[0] == 0 or img.shape[1] == 0:
+            return None
         img = cv2.imread(path)
         if img is None:
             print("Retry failed.")

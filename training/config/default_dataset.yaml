@@ -2,7 +2,7 @@
 data:
   # The code still looks too complicated. I should refactor this again (do I have time?...)
   train:
-    _target_: data.dynamic_dataloader.DynamicTorchDataset
+    _target_: vggt.training.data.dynamic_dataloader.DynamicTorchDataset
     num_workers: 8
     max_img_per_gpu: 48
     # Shuffling in PyTorch DataLoader can sometimes copy large dicts and exceed CPU memory
@@ -29,6 +29,13 @@ data:
       max_img_per_gpu: 48
       allow_duplicate_img: True
       repeat_batch: False
+      # dataset:
+      #   _target_: vggt.training.data.composed_dataset.ComposedDataset
+      #   dataset_configs:
+      #     - _target_: vggt.training.data.datasets.co3d.Co3dDataset
+      #       split: train
+      #       CO3D_DIR: C:/Users/shuvra.das/Documents/Research/SM2ART/vggt/dataset
+      #       CO3D_ANNOTATION_DIR: C:/Users/shuvra.das/Documents/Research/SM2ART/vggt/dataset/annotations
 
       augs:
         cojitter: True
@@ -44,7 +51,7 @@ data:
         gray_scale: True
         gau_blur: False
   val:
-    _target_: data.dynamic_dataloader.DynamicTorchDataset
+    _target_: vggt.training.data.dynamic_dataloader.DynamicTorchDataset
     num_workers: 8
     max_img_per_gpu: 48
     # Shuffling in PyTorch DataLoader can sometimes copy large dicts and exceed CPU memory
@@ -69,6 +76,13 @@ data:
       load_depth: True
       img_nums: [2, 12]
       allow_duplicate_img: True
+      # dataset:
+      #   _target_: vggt.training.data.composed_dataset.ComposedDataset
+      #   dataset_configs:
+      #     - _target_: vggt.training.data.datasets.co3d.Co3dDataset
+      #       split: train
+      #       CO3D_DIR: C:/Users/shuvra.das/Documents/Research/SM2ART/vggt/dataset
+      #       CO3D_ANNOTATION_DIR: C:/Users/shuvra.das/Documents/Research/SM2ART/vggt/dataset/annotations
 
       augs:
         cojitter: False

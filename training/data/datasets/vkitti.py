@@ -13,8 +13,8 @@ import glob
 import cv2
 import numpy as np
 
-from data.dataset_util import *
-from data.base_dataset import BaseDataset
+from ..dataset_util import *
+from ..base_dataset import BaseDataset
 
 
 class VKittiDataset(BaseDataset):

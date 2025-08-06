@@ -15,8 +15,8 @@ import random
 import numpy as np
 
 
-from data.dataset_util import *
-from data.base_dataset import BaseDataset
+from vggt.training.data.dataset_util import *
+from vggt.training.data.base_dataset import BaseDataset
 
 
 SEEN_CATEGORIES = [
@@ -208,10 +208,34 @@ class Co3dDataset(BaseDataset):
         original_sizes = []
 
         for anno in annos:
-            filepath = anno["filepath"]
+            try:
+                filepath = anno[2]
+            except (TypeError, IndexError):
+                filepath = anno["filepath"]
 
             image_path = osp.join(self.CO3D_DIR, filepath)
             image = read_image_cv2(image_path)
+
+            # Enhanced debugging for invalid images
+            if image is None:
+                print(f"ERROR: read_image_cv2 returned None for: {image_path}")
+                continue
+            
+            if len(image.shape) != 3:
+                print(f"ERROR: Image has wrong number of dimensions {image.shape} for: {image_path}")
+                continue
+                
+            if image.shape[0] == 0 or image.shape[1] == 0:
+                print(f"ERROR: Image has zero-sized dimension {image.shape} for: {image_path}")
+                continue
+            
+            # Additional check: ensure the image file actually exists
+            if not osp.exists(image_path):
+                print(f"ERROR: Image file does not exist: {image_path}")
+                continue
+                
+            print(f"SUCCESS: Valid image loaded {image.shape} from: {image_path}")
+
 
             if self.load_depth:
                 depth_path = image_path.replace("/images", "/depths") + ".geometric.png"
@@ -230,8 +254,23 @@ class Co3dDataset(BaseDataset):
                 depth_map = None
 
             original_size = np.array(image.shape[:2])
-            extri_opencv = np.array(anno["extri"])
-            intri_opencv = np.array(anno["intri"])
+            # The following lines will fail. You must provide dummy values
+            # or implement a way to load them from another source.
+            # For now, we'll add a check to prevent a crash.
+            if isinstance(anno, dict) and "extri" in anno and "intri" in anno:
+                extri_opencv = np.array(anno["extri"])
+                intri_opencv = np.array(anno["intri"])
+            else:
+                # Provide dummy values to avoid crashing.
+                # WARNING: This will likely lead to incorrect geometry processing.
+                # You need to find a way to load the correct camera parameters.
+                extri_opencv = np.eye(4)[:3] # Dummy extrinsic
+                intri_opencv = np.eye(3)      # Dummy intrinsic
+
+                
+            print(f"DEBUG: Calling process_one_image for {filepath} with original_size={original_size}")
+
+
 
             (
                 image,
